@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>知行 · 儿童注意力与行为筛查</title>
+<style>
+:root{
+  --ink:#1F2A33; --teal:#2F7D7A; --teal-l:#DCEFEE; --teal-2:#5AA9A5;
+  --coral:#D2694A; --amber:#C98A2E; --ok:#3E8E63; --risk:#B34A3A;
+  --gray:#66757F; --gray35:#A8B4BC; --line:#E3EAEE; --bg:#F6F9FA;
+  --card:#FFFFFF; --r:16px; --sh:0 1px 2px rgba(31,42,51,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Microsoft YaHei","微软雅黑",-apple-system,sans-serif;
+  background:var(--bg); color:var(--ink); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums}
+button{font-family:inherit}
+
+.topbar{
+  position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--line);
+  height:58px;display:flex;align-items:center;gap:16px;padding:0 22px;
+}
+.logo{display:flex;align-items:center;gap:9px}
+.logo .m{width:28px;height:28px;border-radius:9px;background:var(--teal);display:grid;place-items:center;color:#fff;font-size:14px;font-weight:700}
+.logo .t{font-weight:700;color:var(--teal);font-size:15px;letter-spacing:.04em}
+nav{display:flex;gap:2px;margin-left:10px;overflow:auto}
+nav button{border:none;background:transparent;color:var(--gray);font-size:13px;padding:7px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+nav button:hover{background:#F2F7F7;color:var(--teal)}
+nav button.on{background:var(--teal-l);color:var(--teal);font-weight:600}
+.meta{margin-left:auto;font-size:11.5px;color:var(--gray35);white-space:nowrap}
+
+.wrap{max-width:1120px;margin:0 auto;padding:22px}
+.view{display:none}.view.on{display:block}
+
+.head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.head h1{font-size:21px;font-weight:700;color:var(--ink)}
+.head .sub{font-size:12.5px;color:var(--gray)}
+.head .right{margin-left:auto;display:flex;gap:8px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border-radius:11px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--teal-2);background:#F7FBFB}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.primary:hover{background:#266b68}
+.btn.sm{padding:6px 11px;font-size:12px;border-radius:9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.danger{background:var(--coral);border-color:var(--coral);color:#fff}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.card .hd{display:flex;align-items:center;gap:10px;padding:13px 17px;border-bottom:1px solid var(--line)}
+.card .hd h3{font-size:13.5px;font-weight:700}
+.card .hd .hint{margin-left:auto;font-size:11.5px;color:var(--gray35)}
+.card .bd{padding:17px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.pill.nodot::before{display:none}
+.pill.ok{background:rgba(62,142,99,.1);color:var(--ok)}
+.pill.amber{background:rgba(201,138,46,.14);color:#96651c}
+.pill.risk{background:rgba(179,74,58,.1);color:var(--risk)}
+.pill.mute{background:#F1F5F6;color:var(--gray)}
+.pill.teal{background:var(--teal-l);color:var(--teal)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 17px;box-shadow:var(--sh)}
+.kpi .k{font-size:12px;color:var(--gray)}
+.kpi .v{font-size:30px;font-weight:700;color:var(--teal);margin-top:4px;letter-spacing:-.01em}
+.kpi .v small{font-size:13px;color:var(--gray35);font-weight:600;margin-left:3px}
+
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:auto 1fr 86px auto auto;gap:13px;align-items:center;padding:13px 17px;border-bottom:1px solid var(--line);cursor:pointer;transition:.14s}
+.row:last-child{border-bottom:none}
+.row:hover{background:#FAFDFD}
+.row:active{background:#F2F7F7}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:#F1F5F6;color:var(--gray);flex:none}
+.av.risk{background:rgba(179,74,58,.09);color:var(--risk)}
+.av.amber{background:rgba(201,138,46,.14);color:#96651c}
+.nm{font-weight:600;font-size:14px}
+.why{font-size:11.5px;color:var(--gray);margin-top:1px}
+.trend{display:flex;align-items:flex-end;gap:3px;height:26px}
+.trend i{width:6px;background:var(--teal-l);border-radius:2px 2px 0 0}
+.trend i.hi{background:var(--coral)}
+.chev{color:var(--gray35);font-size:15px}
+
+.two{display:grid;grid-template-columns:1fr 330px;gap:14px;align-items:start}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* T2 雷达 */
+.radar-wrap{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+
+/* T3 预览 */
+.paper{
+  background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px 28px;
+  position:relative;overflow:hidden;font-size:11.5px;line-height:1.85;color:#39474F;
+}
+.paper::before{
+  content:"仅供临床参考 · 不构成诊断依据";position:absolute;inset:0;
+  display:grid;place-items:center;font-size:26px;color:rgba(47,125,122,.07);
+  transform:rotate(-24deg);pointer-events:none;font-weight:700;letter-spacing:.1em;
+}
+.paper h4{font-size:13.5px;color:var(--ink);margin-bottom:10px;font-weight:700}
+.paper .sec{margin-bottom:12px}
+.paper .sec b{color:var(--teal);font-size:11px;display:block;margin-bottom:2px}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;padding:7px 0;color:#42525C}
+.check .bx{width:16px;height:16px;border-radius:4px;background:var(--teal-l);color:var(--teal);display:grid;place-items:center;font-size:11px;flex:none;margin-top:2px}
+.progress{height:6px;background:#EDF3F4;border-radius:4px;overflow:hidden;margin-top:12px}
+.progress i{display:block;height:100%;width:0;background:var(--teal);border-radius:4px;transition:width .09s linear}
+
+/* 家长端手机 */
+.phone{
+  width:392px;margin:0 auto;background:#fff;border-radius:34px;border:1px solid var(--line);
+  box-shadow:0 12px 32px rgba(31,42,51,.09);overflow:hidden;
+}
+.phone .bar{height:34px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:var(--gray35);border-bottom:1px solid var(--line)}
+.phone .body{padding:20px 20px 26px;min-height:640px;display:flex;flex-direction:column}
+.phone h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.phone .sub{font-size:12px;color:var(--gray);margin-bottom:16px}
+.opt{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.opt span{
+  padding:8px 14px;border-radius:11px;border:1px solid var(--line);font-size:12.5px;color:var(--gray);
+  cursor:pointer;transition:.15s;background:#fff;
+}
+.opt span:hover{border-color:var(--teal-2)}
+.opt span.on{background:var(--teal-l);border-color:var(--teal);color:var(--teal);font-weight:600}
+.field{margin-bottom:16px}
+.field .lb{font-size:12px;color:var(--gray);margin-bottom:7px}
+.consent-item{padding:13px 0;border-bottom:1px dashed var(--line)}
+.consent-item:last-of-type{border-bottom:none}
+.consent-item b{display:block;font-size:13px;margin-bottom:3px}
+.consent-item p{font-size:12px;color:var(--gray);line-height:1.65}
+.cbox{display:flex;gap:10px;align-items:flex-start;margin:16px 0;cursor:pointer;font-size:12.5px;color:#42525C}
+.cbox .bx{width:20px;height:20px;border:1.5px solid var(--gray35);border-radius:6px;flex:none;display:grid;place-items:center;color:#fff;font-size:13px;transition:.2s}
+.cbox.on .bx{background:var(--teal);border-color:var(--teal)}
+.ring-wrap{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.course{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.course:last-child{border-bottom:none}
+.course .n{width:22px;height:22px;border-radius:7px;background:#F1F5F6;color:var(--gray);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.course.done .n{background:var(--teal-l);color:var(--teal)}
+.course.next .n{background:var(--coral);color:#fff}
+.course.next{font-weight:600}
+.course .st{margin-left:auto;font-size:11px;color:var(--gray35)}
+.course.next .st{color:var(--coral)}
+
+/* 摄像头 */
+.seats{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;max-width:420px}
+.seat{aspect-ratio:1;border:1.5px dashed var(--gray35);border-radius:9px;display:grid;place-items:center;font-size:11px;color:var(--gray35);cursor:pointer;transition:.15s;background:#fff}
+.seat:hover{border-color:var(--teal-2)}
+.seat.on{border-style:solid;border-color:var(--teal);background:var(--teal-l);color:var(--teal);font-weight:700}
+.seat.filled{border-style:solid;border-color:var(--teal-2);background:#F3FAFA;color:var(--teal)}
+.devrow{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.devrow:last-child{border-bottom:none}
+.devrow span{color:var(--gray)}
+.switch{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+.sw{width:48px;height:27px;border-radius:999px;background:var(--teal);position:relative;cursor:pointer;transition:.2s;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:24px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.off{background:#CFD9DD}
+.sw.off::after{left:3px}
+.log{font-size:12px;color:var(--gray);line-height:2.1;font-family:Consolas,monospace}
+.log b{color:var(--teal)}
+
+.banner{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:11px;font-size:12.5px;margin-bottom:14px;border:1px solid}
+.banner.warn{background:#FDF7EA;border-color:#EBDCB6;color:#7A5E12}
+.banner.err{background:rgba(179,74,58,.05);border-color:rgba(179,74,58,.2);color:var(--risk)}
+.banner .r{margin-left:auto;display:flex;gap:8px}
+
+.empty{padding:42px 20px;text-align:center}
+.empty .ic{width:50px;height:50px;border-radius:15px;background:#F1F5F6;margin:0 auto 13px;display:grid;place-items:center;color:var(--gray35);font-size:20px}
+.empty h4{font-size:14.5px;font-weight:700;margin-bottom:5px}
+.empty p{font-size:12px;color:var(--gray);max-width:330px;margin:0 auto 13px}
+
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:11px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---- 首次进入引导 ---- */
+#guide{position:fixed;inset:0;background:rgba(11,44,77,.42);z-index:400;
+  display:none;place-items:center;padding:24px;backdrop-filter:blur(2px)}
+#guide.on{display:grid}
+#guide .box{background:#fff;border-radius:18px;max-width:560px;width:100%;
+  padding:28px 30px 22px;box-shadow:0 24px 64px rgba(11,44,77,.25)}
+#guide .k{font-size:11.5px;letter-spacing:.14em;color:#A9B7C3;font-weight:700}
+#guide h3{font-size:21px;font-weight:700;color:#0B2C4D;margin:6px 0 16px}
+#guide ol{list-style:none;counter-reset:g;margin-bottom:20px}
+#guide li{counter-increment:g;position:relative;padding:12px 0 12px 44px;
+  border-bottom:1px solid #EEF3F7;font-size:13.5px;line-height:1.6;color:#22323F}
+#guide li:last-child{border-bottom:none}
+#guide li::before{content:counter(g);position:absolute;left:0;top:11px;
+  width:26px;height:26px;border-radius:50%;background:#1B76B0;color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:700}
+#guide .foot{display:flex;align-items:center;gap:12px}
+#guide .tip{font-size:11.5px;color:#A9B7C3;flex:1}
+#guide button{border:none;background:#1B76B0;color:#fff;font-weight:700;
+  padding:10px 22px;border-radius:11px;font-size:13.5px;cursor:pointer;font-family:inherit}
+#guide button:hover{background:#17679b}
+#helpBtn{position:fixed;right:16px;bottom:52px;z-index:150;width:34px;height:34px;
+  border-radius:50%;border:1px solid #DCE6EE;background:#fff;color:#5B6B7A;
+  font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(11,44,77,.1)}
+#helpBtn:hover{border-color:#1B76B0;color:#1B76B0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="m">知</div><div class="t">知行</div></div>
+  <nav id="nav">
+    <button data-v="t1" class="on">班级看板</button>
+    <button data-v="t2">学生详情</button>
+    <button data-v="t3">转诊材料包</button>
+    <button data-v="p1">家长 · 同意</button>
+    <button data-v="p2">家长 · 建议</button>
+    <button data-v="p3">家长 · 随访</button>
+    <button data-v="p4">家长 · 课程</button>
+    <button data-v="c1">坐位标定</button>
+    <button data-v="c2">隐私与状态</button>
+  </nav>
+  <div class="meta">三年级（2）班 · 第 10 周</div>
+</div>
+
+<div class="wrap">
+
+<!-- ========== T1 ========== -->
+<section class="view on" id="v-t1">
+  <div class="head">
+    <h1>三年级（2）班</h1>
+    <div class="sub">2026-11-07 · 第 10 周 · 班主任 王老师</div>
+    <div class="right">
+      <span class="pill ok nodot" style="align-self:center">设备在线</span>
+      <button class="btn sm" onclick="toast('已导入 36 人名单')">导入名单</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card">
+    <div class="hd"><h3>本周名单</h3><span class="hint">按提示程度排序 · 点一行看详情</span></div>
+    <div class="list" id="students"></div>
+  </div>
+</section>
+
+<!-- ========== T2 ========== -->
+<section class="view" id="v-t2">
+  <div class="head">
+    <h1>李某某 <span class="pill risk" style="margin-left:6px;vertical-align:4px">建议转诊</span></h1>
+    <div class="sub">三年级（2）班 · 2023***17</div>
+    <div class="right"><button class="btn sm" onclick="goView('t1')">← 返回名单</button></div>
+  </div>
+
+  <div class="radar-wrap">
+    <div class="card">
+      <div class="hd"><h3>五维剖面</h3></div>
+      <div class="bd" style="display:grid;place-items:center">
+        <svg id="radar" width="260" height="250" viewBox="0 0 260 250"></svg>
+      </div>
+    </div>
+
+    <div>
+      <div class="kpis" style="grid-template-columns:1fr 1fr;margin-bottom:14px" id="t2kpi"></div>
+
+      <div class="card">
+        <div class="hd"><h3>建议</h3></div>
+        <div class="bd">
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:14px">
+            <span style="color:var(--coral);font-size:18px;line-height:1.2">⚠</span>
+            <div>
+              <div style="font-weight:700;color:var(--risk);margin-bottom:3px">建议转诊</div>
+              <div style="font-size:12.5px;color:var(--gray);line-height:1.7">
+                抑制第 8 百分位、注意第 15 百分位，两项均低于 15 阈值。建议到儿童保健科做一次专业评估。
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px">
+            <button class="btn primary" onclick="goView('t3')">生成转诊包</button>
+            <button class="btn" onclick="toast('已标记为「观察」')">标记观察</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== T3 ========== -->
+<section class="view" id="v-t3">
+  <div class="head">
+    <h1>转诊材料包</h1>
+    <div class="sub">李某某 · 2026-11-07</div>
+    <div class="right"><button class="btn sm" onclick="goView('t2')">← 返回详情</button></div>
+  </div>
+
+  <div class="two2">
+    <div class="paper">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:15px;font-weight:700;color:var(--teal)">儿童注意力与行为评估材料</div>
+        <div style="font-size:10.5px;color:var(--gray35);margin-top:3px">仅作临床参考 · 不构成诊断依据</div>
+      </div>
+      <div class="sec"><b>一、基本信息</b>2023***17 · 三年级（2）班 · 男 · 9 岁 3 月</div>
+      <div class="sec"><b>二、课堂行为（近 4 周）</b>头姿正向率 41% · 离座 3.2 次/节</div>
+      <div class="sec"><b>三、认知评估</b>CV-RT 0.38 · SSRT 212 ms · d′ 1.62</div>
+      <div class="sec"><b>四、建议</b>建议转诊至儿童保健科进一步评估</div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:10px;color:var(--gray35)">
+        本材料由知行系统生成，数据来源为课堂行为观测与标准化认知任务。不含人脸图像与视频。
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="hd"><h3>导出前确认</h3></div>
+        <div class="bd">
+          <div class="check" data-req><span class="bx">✓</span><span>家长已签署知情同意</span></div>
+          <div class="check" data-req><span class="bx">✓</span><span>不含姓名明文（已脱敏）</span></div>
+          <div class="check" data-req><span class="bx">✓</span><span>写入审计日志</span></div>
+          <div class="progress"><i id="prog"></i></div>
+          <button class="btn primary" id="exportBtn" style="width:100%;margin-top:14px" onclick="doExport()">生成并导出 PDF</button>
+        </div>
+      </div>
+      <div class="banner warn" style="margin:0">
+        <span>ⓘ</span> 未获得监护人同意时，导出按钮为禁用状态。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== P1 ========== -->
+<section class="view" id="v-p1">
+  <div class="phone">
+    <div class="bar">知行 · 家长端</div>
+    <div class="body">
+      <h2>知情同意</h2>
+      <div class="sub">请监护人阅读并确认</div>
+
+      <div class="consent-item"><b>采集什么</b><p>课堂行为（离座、头姿）与一次约 5 分钟的认知小游戏。</p></div>
+      <div class="consent-item"><b>怎么用</b><p>仅用于筛查建议，不用于成绩评定与纪律处分。</p></div>
+      <div class="consent-item"><b>不会做什么</b><p>不采集人脸、不上传视频、不做诊断、不开药。</p></div>
+      <div class="consent-item"><b>可以退出</b><p>随时可联系班主任停止采集并删除数据。</p></div>
+
+      <div class="cbox" id="cbox" onclick="toggleConsent()">
+        <span class="bx">✓</span>
+        <span>我已阅读并同意上述内容</span>
+      </div>
+      <div style="font-size:11px;color:var(--gray35);margin-bottom:14px">李某某家长 · 2026-11-07</div>
+
+      <button class="btn primary" id="agreeBtn" disabled style="margin-top:auto" onclick="goView('p2')">确认并继续</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== P2 ========== -->
+<section class="view" id="v-p2">
+  <div class="phone">
+    <div class="bar">知行 · 家长端</div>
+    <div class="body">
+      <h2>孩子的评估建议</h2>
+      <div class="sub">2026-11-07 · 李某某</div>
+
+      <div style="background:rgba(179,74,58,.06);border:1px solid rgba(179,74,58,.16);border-radius:14px;padding:16px;margin-bottom:18px">
+        <div style="font-weight:700;color:var(--risk);margin-bottom:6px">建议转诊</div>
+        <div style="font-size:12.5px;color:#42525C;line-height:1.75">
+          孩子在「注意稳定性」和「冲动控制」两项偏弱，建议到儿童保健科或儿童心理科做一次专业评估。
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--gray);margin-bottom:9px">接下来可以这样</div>
+      <div style="font-size:13px;line-height:2.2;margin-bottom:18px">
+        ① 本周预约一次门诊<br>
+        ② 把这份材料给医生看<br>
+        ③ 等待期间每天 10 分钟专注小任务
+      </div>
+
+      <button class="btn primary" style="margin-top:auto" onclick="toast('已设置门诊提醒')">帮我预约提醒</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== P3 ========== -->
+<section class="view" id="v-p3">
+  <div class="phone">
+    <div class="bar">知行 · 家长端</div>
+    <div class="body">
+      <h2>本周随访</h2>
+      <div class="sub">第 3 周 · 约 1 分钟</div>
+
+      <div class="field">
+        <div class="lb">睡眠时长</div>
+        <div class="opt" data-g="sleep">
+          <span>不足 7h</span><span class="on">7–8h</span><span>8–9h</span><span>9h 以上</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lb">作业专注时长</div>
+        <div class="opt" data-g="focus">
+          <span>不足 10 分钟</span><span class="on">10–20 分钟</span><span>20–30 分钟</span><span>30 分钟以上</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lb">情绪状态</div>
+        <div class="opt" data-g="mood">
+          <span>平稳</span><span>起伏</span><span>低落</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lb">就医进度</div>
+        <div class="opt" data-g="visit">
+          <span>未预约</span><span>已预约</span><span>已就诊</span>
+        </div>
+      </div>
+
+      <button class="btn primary" style="margin-top:auto" onclick="submitFollow()">提交</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== P4 ========== -->
+<section class="view" id="v-p4">
+  <div class="phone">
+    <div class="bar">知行 · 家长端</div>
+    <div class="body">
+      <h2>家长微课</h2>
+      <div class="sub">8 节 · 每节 5 分钟</div>
+
+      <div class="ring-wrap">
+        <svg width="86" height="86" viewBox="0 0 86 86">
+          <circle cx="43" cy="43" r="35" fill="none" stroke="#EDF3F4" stroke-width="9"/>
+          <circle id="ring" cx="43" cy="43" r="35" fill="none" stroke="var(--teal)" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220"
+                  transform="rotate(-90 43 43)"/>
+        </svg>
+        <div>
+          <div style="font-size:20px;font-weight:700;color:var(--teal)" class="num">3 / 8</div>
+          <div style="font-size:11.5px;color:var(--gray);margin-top:2px">已学 3 节</div>
+          <div style="font-size:11.5px;color:var(--coral);margin-top:6px;font-weight:600">继续：指令-等待-反馈</div>
+        </div>
+      </div>
+
+      <div id="courses"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== C1 ========== -->
+<section class="view" id="v-c1">
+  <div class="head">
+    <h1>坐位标定</h1>
+    <div class="sub">把座位与学生一一对应 · 部署时做一次</div>
+    <div class="right"><span class="pill teal nodot">步骤 2 / 3</span></div>
+  </div>
+
+  <div class="two" style="grid-template-columns:420px 1fr">
+    <div class="card">
+      <div class="hd"><h3>点选座位，按顺序编号</h3><span class="hint" id="seatHint">已标定 0 / 36</span></div>
+      <div class="bd">
+        <div class="seats" id="seats"></div>
+        <div style="margin-top:14px;font-size:11.5px;color:var(--gray35)">点格子看点亮。实际部署会从摄像头画面自动识别座位矩形。</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="hd"><h3>俯角校准</h3><span class="pill ok" id="anglePill">38°</span></div>
+        <div class="bd">
+          <div style="font-size:12.5px;color:var(--gray);line-height:1.8;margin-bottom:14px">
+            推荐 30–45°。俯角过低会遮挡后排，过高会导致头姿估计偏差。
+          </div>
+          <button class="btn primary" onclick="calibrate()">开始自动标定</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>绑定关系</h3></div>
+        <div class="bd" style="font-size:12.5px;color:var(--gray);line-height:1.9" id="bind">
+          尚未绑定任何座位。完成标定后可导入名单自动分配。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== C2 ========== -->
+<section class="view" id="v-c2">
+  <div class="head">
+    <h1>设备隐私与状态</h1>
+    <div class="sub">教室 302 · 设备 ZX-01</div>
+    <div class="right"><span class="pill ok" id="onlinePill">在线</span></div>
+  </div>
+
+  <div class="two2">
+    <div class="card">
+      <div class="hd"><h3>物理隐私开关</h3></div>
+      <div class="bd">
+        <div class="switch" style="margin-bottom:12px">
+          <div class="sw" id="sw" onclick="togglePrivacy()"></div>
+          <span id="swText">采集中</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--gray);line-height:1.8">
+          滑片遮挡镜头 = 立即断采。这是物理开关，不是软件设置项。
+        </div>
+        <div class="devrow" style="margin-top:14px"><span>镜头状态</span><b id="camState" style="color:var(--ok)">采集中</b></div>
+        <div class="devrow"><span>视频留存</span><b>课后删除</b></div>
+        <div class="devrow"><span>人脸特征</span><b>不提取</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><h3>今日日志</h3><span class="hint">写入审计</span></div>
+      <div class="bd">
+        <div class="log">
+          <b>08:00</b>　启动 · 自检通过<br>
+          <b>08:05</b>　采集开始（第 1 节）<br>
+          <b>08:50</b>　采集结束 · 视频已销毁<br>
+          <b>09:00</b>　采集开始（第 2 节）
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+let toastTimer;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),2000)}
+
+const STATIC_MODE = !!new URLSearchParams(location.search).get('static');
+function roll(el,to,ms=900){
+  if(STATIC_MODE){el.textContent=to;return;}
+  const t0=performance.now();
+  (function step(t){
+    const p=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(to*e);
+    if(p<1) requestAnimationFrame(step); else el.textContent=to;
+  })(t0);
+}
+
+/* ---------- 导航 ---------- */
+function goView(id){
+  $$('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.v===id));
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  const el = $('#v-'+id); if(el) el.classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='t2') drawRadar();
+  if(id==='p4') drawRing();
+  if(id==='c1') buildSeats();
+}
+$$('#nav button').forEach(b=> b.onclick = ()=> goView(b.dataset.v));
+
+/* ---------- T1 ---------- */
+let KPI = [
+  {k:'班级人数', v:36, u:'人'},
+  {k:'已完成', v:29, u:'人'},
+  {k:'建议观察', v:5, u:'人'},
+  {k:'建议转诊', v:2, u:'人'}
+];
+let STUDENTS = [
+  {n:'李某某', ini:'李', lv:'risk', why:'离座 6 次 · 头姿正向率 41%', st:'建议转诊', act:'查看', trend:[3,5,6,6,7]},
+  {n:'张某某', ini:'张', lv:'amber', why:'离座 3 次 · 头姿正向率 52%', st:'建议观察', act:'查看', trend:[2,3,3,4,3]},
+  {n:'王某某', ini:'王', lv:'ok', why:'离座 1 次 · 头姿正向率 78%', st:'正常', act:'查看', trend:[1,1,2,1,1]},
+  {n:'赵某某', ini:'赵', lv:'mute', why:'未完成测评', st:'未测', act:'发码', trend:[0,0,0,0,0]}
+];
+function buildT1(){
+  $('#kpis').innerHTML = KPI.map(x=>`
+    <div class="kpi"><div class="k">${x.k}</div>
+      <div class="v num"><span data-v="${x.v}">0</span><small>${x.u}</small></div></div>`).join('');
+  $$('#kpis [data-v]').forEach(el=> roll(el, +el.dataset.v));
+
+  $('#students').innerHTML = STUDENTS.map((s,i)=>`
+    <div class="row" data-i="${i}">
+      <div class="av ${s.lv==='mute'?'':s.lv}">${s.ini}</div>
+      <div><div class="nm">${s.n}</div><div class="why">${s.why}</div></div>
+      <div class="trend">${s.trend.map((v,k)=>`<i class="${k===s.trend.length-1&&v>=5?'hi':''}" style="height:${Math.max(4,v*4)}px"></i>`).join('')}</div>
+      <div><span class="pill ${s.lv==='mute'?'mute':s.lv} nodot">${s.st}</span></div>
+      <div class="chev">›</div>
+    </div>`).join('');
+  $$('#students .row').forEach(r=>{
+    r.onclick = ()=>{
+      const s = STUDENTS[+r.dataset.i];
+      if(s.lv==='mute'){ toast('测评码已发送给家长'); return; }
+      goView('t2');
+    };
+  });
+}
+
+/* ---------- T2 雷达 ---------- */
+let DIMS = [
+  {k:'持续注意', p:15}, {k:'抑制', p:8}, {k:'记忆', p:42},
+  {k:'延迟', p:22}, {k:'活动', p:71}
+];
+function drawRadar(){
+  const svg = $('#radar');
+  const cx=130, cy=122, R=88, n=DIMS.length;
+  const pt=(i,r)=>{
+    const a = -Math.PI/2 + i*2*Math.PI/n;
+    return [cx + Math.cos(a)*r, cy + Math.sin(a)*r];
+  };
+  const poly=(r)=>DIMS.map((_,i)=>pt(i,r).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const dataPoly = DIMS.map((d,i)=>pt(i, R*d.p/100).map(v=>v.toFixed(1)).join(',')).join(' ');
+  svg.innerHTML = `
+    ${[.25,.5,.75,1].map(f=>`<polygon points="${poly(R*f)}" fill="none" stroke="#E3EAEE" stroke-width="1"/>`).join('')}
+    ${DIMS.map((_,i)=>{const [x,y]=pt(i,R);return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E3EAEE"/>`}).join('')}
+    <polygon points="${dataPoly}" fill="rgba(210,105,74,.18)" stroke="#D2694A" stroke-width="2"
+             style="transform-origin:${cx}px ${cy}px;${STATIC_MODE?'':'transform:scale(.2);transition:transform 1.1s cubic-bezier(.2,.9,.2,1)'}"
+             id="radarPoly"/>
+    ${DIMS.map((d,i)=>{const [x,y]=pt(i,R+17);return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="10.5" fill="#66757F" text-anchor="middle" dominant-baseline="middle">${d.k}</text>`}).join('')}
+    ${DIMS.map((d,i)=>{const [x,y]=pt(i,R*d.p/100+0);return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#D2694A"/>`}).join('')}`;
+  if(!STATIC_MODE) requestAnimationFrame(()=>{ const el=$('#radarPoly'); if(el) el.style.transform='scale(1)'; });
+}
+
+let T2KPI = [
+  {k:'CV-RT', v:0.38, u:'', p:15, bad:true},
+  {k:'d′', v:1.62, u:'', p:18, bad:true},
+  {k:'SSRT', v:212, u:'ms', p:8, bad:true},
+  {k:'最大跨度', v:4, u:'', p:42, bad:false}
+];
+function buildT2(){
+  $('#t2kpi').innerHTML = T2KPI.map(x=>`
+    <div class="kpi">
+      <div class="k">${x.k}</div>
+      <div class="v num" style="color:${x.bad?'var(--coral)':'var(--teal)'}">
+        ${x.v}${x.u?`<small>${x.u}</small>`:''}
+      </div>
+      <div style="font-size:11px;color:${x.bad?'var(--risk)':'var(--gray)'};margin-top:2px">第 ${x.p} 百分位</div>
+    </div>`).join('');
+}
+
+/* ---------- T3 ---------- */
+let exporting = false;
+function doExport(){
+  if(exporting) return;
+  exporting = true;
+  const bar = $('#prog'), btn = $('#exportBtn');
+  btn.disabled = true; btn.textContent = '生成中…';
+  let p = 0;
+  const t = setInterval(()=>{
+    p = Math.min(100, p + 4);
+    bar.style.width = p + '%';
+    if(p >= 100){
+      clearInterval(t);
+      btn.textContent = '已导出 ✓';
+      toast('转诊材料包已导出，审计日志已写入');
+      setTimeout(()=>{ btn.disabled=false; btn.textContent='生成并导出 PDF'; bar.style.width='0%'; exporting=false; }, 1800);
+    }
+  }, 30);
+}
+
+/* ---------- P1 ---------- */
+let consented = false;
+function toggleConsent(){
+  consented = !consented;
+  $('#cbox').classList.toggle('on', consented);
+  $('#agreeBtn').disabled = !consented;
+}
+
+/* ---------- P3 ---------- */
+$$('.opt').forEach(g=>{
+  g.querySelectorAll('span').forEach(s=>{
+    s.onclick = ()=>{
+      g.querySelectorAll('span').forEach(x=>x.classList.remove('on'));
+      s.classList.add('on');
+    };
+  });
+});
+function submitFollow(){
+  toast('本周随访已提交，谢谢');
+}
+
+/* ---------- P4 ---------- */
+const COURSES = [
+  ['认识注意力差异','已学','done'],
+  ['指令要短要具体','已学','done'],
+  ['用计时器代替催促','已学','done'],
+  ['指令-等待-反馈','继续','next'],
+  ['把大任务切成小步','未学',''],
+  ['表扬要具体及时','未学',''],
+  ['建立固定的作息','未学',''],
+  ['与老师保持一致','未学','']
+];
+function buildCourses(){
+  $('#courses').innerHTML = COURSES.map((c,i)=>`
+    <div class="course ${c[2]}">
+      <div class="n">${String(i+1).padStart(2,'0')}</div>
+      <div>${c[0]}</div>
+      <div class="st">${c[1]}</div>
+    </div>`).join('');
+}
+function drawRing(){
+  const ring = $('#ring');
+  const total = 220, pct = 3/8;
+  if(STATIC_MODE){ ring.style.strokeDashoffset = total*(1-pct); return; }
+  ring.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.2,.9,.2,1)';
+  requestAnimationFrame(()=> ring.style.strokeDashoffset = total*(1-pct));
+}
+
+/* ---------- C1 ---------- */
+let seatsBuilt = false, filled = 0;
+function buildSeats(){
+  if(seatsBuilt) return;
+  seatsBuilt = true;
+  const box = $('#seats');
+  box.innerHTML = Array.from({length:36},(_,i)=>`<div class="seat" data-i="${i}">${i+1}</div>`).join('');
+  box.querySelectorAll('.seat').forEach(s=>{
+    s.onclick = ()=>{
+      if(s.classList.contains('filled')) return;
+      s.classList.add('filled');
+      filled++;
+      $('#seatHint').textContent = `已标定 ${filled} / 36`;
+      $('#bind').innerHTML = filled >= 1
+        ? `已绑定 <b style="color:var(--teal)">${filled}</b> 个座位。可继续点选，或点「开始自动标定」让系统按行列顺序编号。`
+        : '尚未绑定任何座位。';
+    };
+  });
+}
+function calibrate(){
+  toast('自动标定中，预计 6 秒…');
+  setTimeout(()=>{
+    const all = $$('#seats .seat');
+    all.forEach((s,i)=> setTimeout(()=> s.classList.add('filled'), i*30));
+    filled = 36;
+    $('#seatHint').textContent = '已标定 36 / 36';
+    $('#bind').innerHTML = '36 个座位已按行列顺序编号，等待导入名单完成绑定。';
+    toast('标定完成：36 个座位');
+  }, 600);
+}
+
+/* ---------- C2 ---------- */
+let privacyOn = true;
+function togglePrivacy(){
+  privacyOn = !privacyOn;
+  const sw = $('#sw');
+  sw.classList.toggle('off', !privacyOn);
+  $('#swText').textContent = privacyOn ? '采集中' : '已断采';
+  $('#swText').style.color = privacyOn ? 'var(--ok)' : 'var(--risk)';
+  $('#camState').textContent = privacyOn ? '采集中' : '已断开';
+  $('#camState').style.color = privacyOn ? 'var(--ok)' : 'var(--risk)';
+  toast(privacyOn ? '已恢复采集' : '滑片遮挡 → 立即断采');
+}
+
+/* ---------- 启动 ---------- */
+buildT1();
+buildT2();
+
+/* ============ 接后端 ============ */
+const ZX_LEVEL = { risk:['risk','建议转诊'], amber:['amber','建议观察'],
+                   ok:['ok','正常'], mute:['mute','未测'] };
+
+function zxBadge(text, ok){
+  let el = document.getElementById('apiBadge');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'apiBadge';
+    el.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:150;font-size:11px;' +
+      'padding:6px 11px;border-radius:9px;background:#fff;border:1px solid var(--line);' +
+      'color:var(--gray);box-shadow:0 2px 8px rgba(31,42,51,.08)';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.color = ok ? 'var(--ok)' : 'var(--gray)';
+  el.style.borderColor = ok ? 'rgba(62,142,99,.35)' : 'var(--line)';
+}
+
+async function hydrateZx(){
+  if(location.protocol === 'file:'){ zxBadge('本地演示数据（用服务启动可接后端）', false); return; }
+  try{
+    const r = await fetch('/api/zx/class/G3-2');
+    if(!r.ok) throw new Error('bad');
+    const d = await r.json();
+
+    KPI[0].v = d.kpi.total; KPI[1].v = d.kpi.done;
+    KPI[2].v = d.kpi.watch; KPI[3].v = d.kpi.refer;
+
+    STUDENTS = d.students.slice(0, 8).map(s=>{
+      const ui = ZX_LEVEL[s.level] || ZX_LEVEL.ok;
+      return { id:s.id, n:s.name, ini:s.initial, lv:ui[0], why:s.behavior || '',
+               st:ui[1], act:'查看', trend:s.trend && s.trend.length ? s.trend : [1,1,1,2,1] };
+    });
+
+    buildT1();
+    zxBadge('已连接后端', true);
+  }catch(e){
+    zxBadge('本地演示数据（后端未连接）', false);
+  }
+}
+
+document.addEventListener('click', async (ev)=>{
+  const row = ev.target.closest('#students .row');
+  if(!row || location.protocol === 'file:') return;
+  const s = STUDENTS[+row.dataset.i];
+  if(!s || !s.id) return;
+  try{
+    const r = await fetch('/api/zx/student/' + s.id);
+    if(!r.ok) return;
+    const d = await r.json();
+    if(d.dimensions && d.dimensions.length === 5){
+      DIMS = d.dimensions.map(x=>({ k:x.dim, p:x.pct }));
+      drawRadar();
+    }
+    if(d.metrics && d.metrics.length){
+      T2KPI = d.metrics.map(m=>({ k:m.label, v:m.value, u:m.unit || '',
+                                  p:m.pct, bad:m.pct < 20 }));
+      buildT2();
+    }
+    document.querySelector('#v-t2 h1').innerHTML =
+      d.student.name + ' <span class="pill ' + (ZX_LEVEL[d.student.level]||ZX_LEVEL.ok)[0] +
+      '" style="margin-left:6px;vertical-align:4px">' +
+      (ZX_LEVEL[d.student.level]||ZX_LEVEL.ok)[1] + '</span>';
+  }catch(e){}
+});
+
+hydrateZx();
+buildCourses();
+const initial = new URLSearchParams(location.search).get('v');
+if(initial && $('#v-'+initial)) goView(initial);
+else drawRadar();
+
+/* ---- 首次进入引导 ---- */
+window.addEventListener('DOMContentLoaded', function(){
+  const KEY = 'zx_guide_v1';
+  function open(){ document.getElementById('guide').classList.add('on'); }
+  function close(){ document.getElementById('guide').classList.remove('on');
+    try{ localStorage.setItem(KEY,'1'); }catch(e){} }
+  window.openGuide = open;
+  window.closeGuide = close;
+  document.getElementById('guideGo').onclick = close;
+  document.getElementById('helpBtn').onclick = open;
+  document.getElementById('guide').onclick = (e)=>{
+    if(e.target.id === 'guide') close();
+  };
+  let done = false;
+  try{ done = localStorage.getItem(KEY) === '1'; }catch(e){}
+  if(!done) setTimeout(open, 600);
+});
+
+</script>
+
+<div id="guide">
+  <div class="box">
+    <div class="k">随手三步</div>
+    <h3>知行怎么用</h3>
+    <ol><li>先看四个数字里的「建议转诊」——那是这周要跟家长沟通的人数。</li><li>点那个孩子，看左边五维雷达：哪个角凹进去，就是他的弱项。</li><li>右下角两个指标低于第 15 百分位时，点「生成转诊包」导出材料。</li></ol>
+    <div class="foot">
+      <span class="tip">右下角的「?」随时能再打开</span>
+      <button id="guideGo">知道了</button>
+    </div>
+  </div>
+</div>
+<button id="helpBtn" title="怎么看">?</button>
+
+</body>
+</html>
